@@ -141,15 +141,17 @@ class Fem2D:
 
         # print("A", self.A)
         # print("F", self.F)
-        #
+
         print("Solving equations problem by using Conjugate gradient method")
         self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
         print("Solved CG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
         part_time = time.time()
+
         # print(self.Un)
 
         # self.Un = lil_matrix(lgmres(A=self.A,b=np.array([x[0] for x in self.F.toarray()]))[0]).transpose()
         # print(self.Un)
+        # print(self.A.dot(self.Un) - self.F)
 
         print("Finished FEM in {0:2} seconds".format(time.time() - time_start))
 
@@ -191,4 +193,5 @@ temp.dirichlet_boundary(fn_f=f, fn_root=root_function,
                                   fn_root_dev_x=root_function_deviation_x,
                                   fn_root_dev_y=root_function_deviation_y,
                                   n_iter=5, square_size=1, r_const=0, p_const=1)
+
 temp.error_in_point(0.69, 0.69)
