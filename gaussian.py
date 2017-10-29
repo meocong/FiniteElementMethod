@@ -5,12 +5,28 @@ from vertices import Vertex
 class IntergralationGaussian:
     def transfrom_x_y_from_csi_eta(self, csi, eta, ver1, ver2, ver3):
         return (ver2.x - ver1.x) * csi + (ver3.x - ver1.x) * eta + ver1.x, \
-        (ver2.y - ver1.y) * csi + (ver3.y - ver1.y) * eta + ver1.y
+               (ver2.y - ver1.y) * csi + (ver3.y - ver1.y) * eta + ver1.y
 
     def transform_csi_eta_from_x_y(self, x, y, v1, v2, v3):
         delta = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x)
         return ((v3.y - v1.y) * (x - v1.x) - (v3.x - v1.x) * (y - v1.y)) / delta, \
               -((v2.y - v1.y) * (x - v1.x) - (v2.x - v1.x) * (y - v1.y)) / delta
+
+    def dev_csi_x(self,v1,v2,v3):
+        delta = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x)
+        return (v3.y - v1.y) / delta
+
+    def dev_eta_x(self,v1,v2,v3):
+        delta = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x)
+        return -(v2.y - v1.y) / delta
+
+    def dev_csi_y(self,v1,v2,v3):
+        delta = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x)
+        return - (v3.x - v1.x) / delta
+
+    def dev_eta_y(self,v1,v2,v3):
+        delta = (v2.x - v1.x) * (v3.y - v1.y) - (v2.y - v1.y) * (v3.x - v1.x)
+        return (v2.x - v1.x) / delta
 
     def _gaussian(self, g):
         sqrt15 = sqrt(15)
@@ -60,9 +76,11 @@ class IntergralationGaussian:
 
             delta = fn_dev_x(x, y)
             if v1.on_bound == False:
-                delta += Un[v1.idx, 0]
+                delta += Un[v1.idx, 0] * (self.dev_csi_x(v1,v2,v3) + self.dev_eta_x(v1,v2,v3))
             if v2.on_bound == False:
-                delta += Un[v2.idx, 0]
+                delta -= Un[v2.idx, 0] * self.dev_csi_x(v1,v2,v3)
+            if v3.on_bound == False:
+                delta -= Un[v3.idx, 0] * self.dev_eta_x(v1,v2,v3)
             return delta**2
 
         return triangle.area2()*self._gaussian(new_func)
@@ -77,9 +95,11 @@ class IntergralationGaussian:
 
             delta = fn_dev_y(x, y)
             if v1.on_bound == False:
-                delta += Un[v1.idx, 0]
+                delta += Un[v1.idx, 0] * (self.dev_csi_y(v1,v2,v3) + self.dev_eta_y(v1,v2,v3))
+            if v2.on_bound == False:
+                delta -= Un[v2.idx, 0] * self.dev_csi_y(v1,v2,v3)
             if v3.on_bound == False:
-                delta += Un[v3.idx, 0]
+                delta -= Un[v3.idx, 0] * self.dev_eta_y(v1,v2,v3)
             return delta**2
 
         return triangle.area2()*self._gaussian(new_func)

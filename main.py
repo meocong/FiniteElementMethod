@@ -95,17 +95,19 @@ class Fem2D:
         return sqrt(error)
 
     def _estimated_error_in_h10(self, list_triangles, fn_root, fn_root_dev_x, fn_root_dev_y, Un):
-        error = 0
+        l2_error = 0
         for triangle in list_triangles:
-            error += self.gauss.estimate_error_on_element_l2_space(triangle, fn_root, Un)
+            l2_error += self.gauss.estimate_error_on_element_l2_space(triangle, fn_root, Un)
 
+        fx_error = 0
         for triangle in list_triangles:
-                    error += self.gauss.estimate_error_on_element_dev_x(triangle, fn_root_dev_x, Un)
+            fx_error += self.gauss.estimate_error_on_element_dev_x(triangle, fn_root_dev_x, Un)
 
+        fy_error = 0
         for triangle in list_triangles:
-                    error += self.gauss.estimate_error_on_element_dev_y(triangle, fn_root_dev_y, Un)
+            fy_error += self.gauss.estimate_error_on_element_dev_y(triangle, fn_root_dev_y, Un)
 
-        return sqrt(error)
+        return sqrt(l2_error + fx_error + fy_error)
 
     def dirichlet_boundary(self, fn_f, fn_root, fn_root_dev_x, fn_root_dev_y, n_iter, square_size, r_const, p_const):
         time_start = time.time()
@@ -140,13 +142,13 @@ class Fem2D:
         # print("A", self.A)
         # print("F", self.F)
         #
-        # print("Solving equations problem by using Conjugate gradient method")
-        # self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
-        # print("Solved CG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
-        # part_time = time.time()
-        # # print(self.Un)
+        print("Solving equations problem by using Conjugate gradient method")
+        self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
+        print("Solved CG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
+        part_time = time.time()
+        # print(self.Un)
 
-        self.Un = lil_matrix(lgmres(A=self.A,b=np.array([x[0] for x in self.F.toarray()]))[0]).transpose()
+        # self.Un = lil_matrix(lgmres(A=self.A,b=np.array([x[0] for x in self.F.toarray()]))[0]).transpose()
         # print(self.Un)
 
         print("Finished FEM in {0:2} seconds".format(time.time() - time_start))
@@ -161,6 +163,7 @@ class Fem2D:
 
     def error_in_point(self, x, y):
         triangle = self.triandulation.find_exactly_element(self.square_size, self.n_iter, x, y)
+        # print(triangle.vertices[0].x,triangle.vertices[0].y,triangle.vertices[1].x,triangle.vertices[1].y,triangle.vertices[2].x,triangle.vertices[2].y)
         real = self.fn_root(x,y)
         print("#############################################")
         print("Real value    : f({0},{1}) = {2}".format(x,y,real))
@@ -187,5 +190,5 @@ temp = Fem2D()
 temp.dirichlet_boundary(fn_f=f, fn_root=root_function,
                                   fn_root_dev_x=root_function_deviation_x,
                                   fn_root_dev_y=root_function_deviation_y,
-                                  n_iter=7, square_size=1, r_const=0, p_const=1)
+                                  n_iter=5, square_size=1, r_const=0, p_const=1)
 temp.error_in_point(0.69, 0.69)
