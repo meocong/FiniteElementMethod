@@ -107,13 +107,13 @@ class IntergralationGaussian:
                                                            ver2:Vertex,
                                                            ver3:Vertex):
 
-        return ((ver2.x - ver3.x)**2 + (ver2.y - ver3.y)**2)/triangle.area2()
+        return ((ver2.x - ver3.x)**2 + (ver2.y - ver3.y)**2)/(2*triangle.area2())
 
     def computing_intergralation_u_deri_multi_v_deri_function_on_triangle(self, triangle:Triangle, ver1:Vertex,
                                                            ver2:Vertex,
                                                            ver3:Vertex):
 
-        return ((ver2.y - ver3.y)*(ver3.y - ver1.y) +(ver2.x - ver3.x)*(ver3.x - ver1.x) )/triangle.area2()
+        return ((ver2.y - ver3.y)*(ver3.y - ver1.y) +(ver2.x - ver3.x)*(ver3.x - ver1.x) )/(2*triangle.area2())
 
     def computing_intergralation_u_multi_v_function_on_triangle(self, triangle:Triangle, alpha):
 
