@@ -188,5 +188,6 @@ temp = Fem2D()
 temp.dirichlet_boundary(fn_f=f, fn_root=root_function,
                                   fn_root_dev_x=root_function_deviation_x,
                                   fn_root_dev_y=root_function_deviation_y,
-                                  n_iter=5, square_size=1, r_const=0, p_const=1)
+                                  n_iter=7, square_size=1, r_const=0, p_const=1)
+
 temp.error_in_point(0.69, 0.69)
