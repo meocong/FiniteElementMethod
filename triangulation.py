@@ -53,24 +53,27 @@ class Triangulation:
 
     def _get_one_triangle_satify_x_y(self,list_triangles,x,y):
         if (list_triangles[0] != None):
-            for triangle in list_triangles:
+            for idx, triangle in enumerate(list_triangles):
                 if triangle.contain(x,y):
-                    return [triangle]
-        return [None]
+                    return [triangle], idx
+        return [None], None
 
     def find_exactly_element(self, square_size, n_iter, x, y):
         list_triangles, vertices_inner, vertices_bound = self.init_triangles(square_size)
 
-        list_triangles = self._get_one_triangle_satify_x_y(list_triangles, x,y)
+        trian_idx = 0
+        list_triangles, idx = self._get_one_triangle_satify_x_y(list_triangles, x,y)
+        if (list_triangles[0] == None):
+            return None
+        trian_idx = trian_idx * 4 + idx
 
         if (n_iter > 0):
             for iter in range(n_iter):
-                if (list_triangles[0] == None):
-                    return None
                 list_triangles = self._triangulation(list_triangles, vertices_inner, vertices_bound, n_iter = 1)
-                list_triangles = self._get_one_triangle_satify_x_y(list_triangles, x, y)
+                list_triangles, idx = self._get_one_triangle_satify_x_y(list_triangles, x, y)
+                trian_idx = trian_idx * 4 + idx
 
-        return list_triangles[0]
+        return trian_idx
 
     def process_square(self, square_size, n_iter, plot=False):
         list_triangles, vertices_inner, vertices_bound = self.init_triangles(square_size)

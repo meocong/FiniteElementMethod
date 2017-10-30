@@ -118,8 +118,8 @@ class Fem2D:
 
         print("Deviding triangle element")
 
-        list_triangles, list_inner_vertices, list_bound_vertices = self.triandulation.process_square(square_size, n_iter, plot=False)
-        n_element = len(list_triangles)
+        self.list_triangles, list_inner_vertices, list_bound_vertices = self.triandulation.process_square(square_size, n_iter, plot=False)
+        n_element = len(self.list_triangles)
 
         part_time = time.time()
         print("Devided {0} triangle elements in {1:2} seconds".format(n_element, part_time - time_start))
@@ -127,12 +127,12 @@ class Fem2D:
         print("Number of vertices on boundary: {0}".format(list_bound_vertices.length))
 
         print("Computing force vector")
-        self.F = self._computing_force_vector(list_triangles, n_element, fn_f)
+        self.F = self._computing_force_vector(self.list_triangles, n_element, fn_f)
         print("Computed force vector in {0} seconds".format(time.time() - part_time))
         part_time = time.time()
 
         print("Computing stiffness matrix")
-        self.A = self._computing_stiffness(list_triangles, n_element, r_const, p_const)
+        self.A = self._computing_stiffness(self.list_triangles, n_element, r_const, p_const)
         print("Computed stiffness matrix in {0:2} seconds".format(time.time() - part_time))
         num_nonzero = len(self.A.nonzero()[0])
         print("Number of nonzero values {0}".format(num_nonzero))
@@ -155,21 +155,24 @@ class Fem2D:
 
         print("Finished FEM in {0:2} seconds".format(time.time() - time_start))
 
-        l2_error = self._estimated_error_in_l2(list_triangles, fn_root, self.Un)
+        l2_error = self._estimated_error_in_l2(self.list_triangles, fn_root, self.Un)
         print("Error in L2 space: {0} estimated in {1:2} seconds".format(l2_error, time.time() - part_time))
         part_time = time.time()
 
-        l2_error = self._estimated_error_in_h10(list_triangles, fn_root, fn_root_dev_x, fn_root_dev_y, self.Un)
+        l2_error = self._estimated_error_in_h10(self.list_triangles, fn_root, fn_root_dev_x, fn_root_dev_y, self.Un)
         print("Error in H10 space: {0} estimated in {1:2} seconds".format(l2_error, time.time() - part_time))
         part_time = time.time()
 
     def error_in_point(self, x, y):
-        triangle = self.triandulation.find_exactly_element(self.square_size, self.n_iter, x, y)
+        triangle_idx = self.triandulation.find_exactly_element(self.square_size, self.n_iter, x, y)
+        if (triangle_idx == None):
+            predicted = 0
+        else:
+            predicted = self.gauss.estimate_point_value_in_triangle(self.list_triangles[triangle_idx], x, y, self.Un)
         # print(triangle.vertices[0].x,triangle.vertices[0].y,triangle.vertices[1].x,triangle.vertices[1].y,triangle.vertices[2].x,triangle.vertices[2].y)
         real = self.fn_root(x,y)
         print("#############################################")
         print("Real value    : f({0},{1}) = {2}".format(x,y,real))
-        predicted = self.gauss.estimate_point_value_in_triangle(triangle,x,y,self.Un)
         print("Estimate value:              {0}".format(predicted))
         print("Error         :              {0}".format(abs(predicted - real)))
 
