@@ -165,19 +165,23 @@ class IntergralationGaussian:
         return ((ver2.y - ver3.y)*(ver3.y - ver1.y) +(ver2.x - ver3.x)*(ver3.x - ver1.x) )/(2*triangle.area2())\
 
     @staticmethod
-    def computing_intergralation_u_deri_multi_u_deri_function_on_triangle(fn_p, triangle:Triangle,
+    def computing_intergralation_u_deri_multi_u_deri_function_on_triangle_using_element_center(fn_p, triangle:Triangle,
                                                            ver1:Vertex,
                                                            ver2:Vertex,
                                                            ver3:Vertex):
 
-        return ((ver2.x - ver3.x)**2 + (ver2.y - ver3.y)**2)/(2*triangle.area2())
+        return ((ver2.x - ver3.x)**2 + (ver2.y - ver3.y)**2)/(2*triangle.area2()) \
+               * fn_p((ver1.x + ver2.x + ver3.x)/3.0,(ver1.y + ver2.y + ver3.y)/3.0)
 
     @staticmethod
-    def computing_intergralation_u_deri_multi_v_deri_function_on_triangle(fn_p, triangle:Triangle, ver1:Vertex,
+    def computing_intergralation_u_deri_multi_v_deri_function_on_triangle_using_element_center(fn_p,
+                                                                                               triangle:Triangle,
+                                                                                                        ver1:Vertex,
                                                            ver2:Vertex,
                                                            ver3:Vertex):
 
-        return ((ver2.y - ver3.y)*(ver3.y - ver1.y) +(ver2.x - ver3.x)*(ver3.x - ver1.x) )/(2*triangle.area2())
+        return ((ver2.y - ver3.y)*(ver3.y - ver1.y) +(ver2.x - ver3.x)*(ver3.x - ver1.x) )/(2*triangle.area2()) \
+               * fn_p((ver1.x + ver2.x + ver3.x)/3.0,(ver1.y + ver2.y + ver3.y)/3.0)
 
     @staticmethod
     def computing_intergralation_u_multi_v_function_on_triangle_r_const(triangle:Triangle, alpha):
@@ -196,6 +200,13 @@ class IntergralationGaussian:
         return triangle.area2()*IntergralationGaussian._gaussian(new_func)
 
     @staticmethod
+    def computing_intergralation_u_multi_u_function_on_triangle_using_element_center(fn_r, triangle:Triangle, ver1:Vertex,
+                                                           ver2:Vertex,
+                                                           ver3:Vertex):
+
+        return triangle.area2()/12.0 * fn_r((ver1.x + ver2.x + ver3.x)/3.0,(ver1.y + ver2.y + ver3.y)/3.0)
+
+    @staticmethod
     def computing_intergralation_u_multi_v_function_on_triangle(fn_r, triangle:Triangle, ver1:Vertex,
                                                            ver2:Vertex,
                                                            ver3:Vertex):
@@ -205,3 +216,10 @@ class IntergralationGaussian:
             return fn_r(x, y) * (1 - csi - eta) * csi
 
         return triangle.area2()*IntergralationGaussian._gaussian(new_func)
+
+    @staticmethod
+    def computing_intergralation_u_multi_v_function_on_triangle_using_element_center(fn_r, triangle:Triangle, ver1:Vertex,
+                                                           ver2:Vertex,
+                                                           ver3:Vertex):
+
+        return triangle.area2() / 24.0 * fn_r((ver1.x + ver2.x + ver3.x) / 3.0, (ver1.y + ver2.y + ver3.y) / 3.0)

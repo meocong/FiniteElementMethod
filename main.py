@@ -55,13 +55,13 @@ class Fem2D:
                 res.append((triangle.vertices[i].idx, triangle.vertices[i].idx,
                     r_const * IntergralationGaussian.computing_intergralation_u_multi_v_function_on_triangle_r_const(
                         triangle,
-                        1 / 12)))
+                        1.0 / 12)))
 
                 if (triangle.vertices[i - 1].on_bound != True):
                     res.append((triangle.vertices[i].idx, triangle.vertices[i - 1].idx,
                         r_const * IntergralationGaussian.computing_intergralation_u_multi_v_function_on_triangle_r_const(
                             triangle,
-                            1 / 24)))
+                            1.0 / 24)))
         return res
 
     @staticmethod
@@ -71,7 +71,7 @@ class Fem2D:
         for i in range(0, 3):
             if (triangle.vertices[i].on_bound != True):
                 res.append((triangle.vertices[i].idx, triangle.vertices[i].idx,
-                    IntergralationGaussian.computing_intergralation_u_multi_u_function_on_triangle(
+                    IntergralationGaussian.computing_intergralation_u_multi_u_function_on_triangle_using_element_center(
                         fn_r,
                         triangle,
                         triangle.vertices[i],
@@ -80,7 +80,7 @@ class Fem2D:
 
                 if (triangle.vertices[i - 1].on_bound != True):
                     res.append((triangle.vertices[i].idx, triangle.vertices[i - 1].idx,
-                        IntergralationGaussian.computing_intergralation_u_multi_v_function_on_triangle(
+                        IntergralationGaussian.computing_intergralation_u_multi_v_function_on_triangle_using_element_center(
                             fn_r,
                             triangle,
                             triangle.vertices[i],
@@ -117,7 +117,7 @@ class Fem2D:
         for i in range(0, 3):
             if (triangle.vertices[i].on_bound != True):
                 res.append((triangle.vertices[i].idx, triangle.vertices[i].idx,
-                    IntergralationGaussian.computing_intergralation_u_deri_multi_u_deri_function_on_triangle(
+                    IntergralationGaussian.computing_intergralation_u_deri_multi_u_deri_function_on_triangle_using_element_center(
                         fn_p,
                         triangle,
                         triangle.vertices[i],
@@ -126,7 +126,7 @@ class Fem2D:
 
                 if (triangle.vertices[i - 1].on_bound != True):
                     res.append((triangle.vertices[i].idx, triangle.vertices[i - 1].idx,
-                        IntergralationGaussian.computing_intergralation_u_deri_multi_v_deri_function_on_triangle(
+                        IntergralationGaussian.computing_intergralation_u_deri_multi_v_deri_function_on_triangle_using_element_center(
                             fn_p,
                             triangle,
                             triangle.vertices[i],
@@ -241,7 +241,6 @@ class Fem2D:
 
 
     def _estimated_error_in_h10(self, list_triangles, fn_root, fn_root_dev_x, fn_root_dev_y, Un):
-        print(hex(id(Un)))
         # l2_error = 0
         # for triangle in list_triangles:
         #     l2_error += self.gauss.estimate_error_on_element_l2_space(triangle, fn_root, Un)
@@ -354,6 +353,6 @@ temp = Fem2D()
 temp.dirichlet_boundary(fn_f=f, fn_root=root_function,
                           fn_root_dev_x=root_function_deviation_x,
                           fn_root_dev_y=root_function_deviation_y,
-                          n_iter=9, square_size=1, fn_r=r, fn_p=p, plot = False)
+                          n_iter=7, square_size=1, fn_r=r, fn_p=p, plot = False)
 
 temp.error_in_point(0.69, 0.69)
