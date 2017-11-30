@@ -2,7 +2,7 @@ from triangulation import Triangulation
 from gaussian import IntergralationGaussian
 from scipy.sparse import lil_matrix, csr_matrix, csc_matrix
 import time
-from math import sqrt
+from math import sqrt, exp
 from scipy.sparse.linalg import cg, cgs,lsqr, lgmres, qmr, lsmr, bicg, bicgstab
 import numpy as np
 from pyamg import smoothed_aggregation_solver
@@ -263,7 +263,8 @@ class Fem2D:
 
         return sqrt(l2_error), sqrt(l2_error + fx_error + fy_error)
 
-    def dirichlet_boundary(self, fn_f, fn_root, fn_root_dev_x, fn_root_dev_y, n_iter, square_size, fn_r, fn_p, plot = False):
+    def dirichlet_boundary(self, fn_f, fn_root, fn_root_dev_x, fn_root_dev_y, fn_r, fn_p, plot,
+                           square_size, adaptive, threshold_adaptive, n_iter, max_element):
         time_start = time.time()
 
         self.fn_root = fn_root
@@ -272,7 +273,10 @@ class Fem2D:
 
         print("Deviding triangle element")
 
-        self.list_triangles, list_inner_vertices, list_bound_vertices = self.triandulation.process_square(square_size, n_iter, plot=plot)
+        self.list_triangles, list_inner_vertices, list_bound_vertices = \
+            self.triandulation.process_square(square_size=square_size, n_iter=n_iter, plot=plot, adaptive=adaptive,
+                                              threshold_adaptive=threshold_adaptive, fn_f =fn_f,
+                                              max_element=max_element)
         n_element = len(self.list_triangles)
 
         part_time = time.time()
@@ -296,10 +300,10 @@ class Fem2D:
         # print("A", self.A)
         # print("F", self.F)
 
-        print("Solving equations problem by using Conjugate gradient method")
+        print("Solving equations problem by using Preconditioner onjugate gradient method")
         # self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
         self.Un, time_iter = self.cg_method_optimize(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
-        print("Solved CG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
+        print("Solved PCG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
         part_time = time.time()
 
         # print(self.Un)
@@ -310,11 +314,11 @@ class Fem2D:
         print("Finished FEM in {0:2} seconds".format(time.time() - time_start))
         part_time = time.time()
 
-        print("Computing error")
-        l2_error, h10_error = self._estimated_error_in_h10(self.list_triangles, fn_root, fn_root_dev_x, fn_root_dev_y, self.Un)
-        print("Error in L2 space : {0}".format(l2_error))
-        print("Error in H10 space: {0} estimated in {1:2} seconds".format(h10_error, time.time() - part_time))
-        part_time = time.time()
+        if (fn_root is not None):
+            print("Computing error")
+            l2_error, h10_error = self._estimated_error_in_h10(self.list_triangles, fn_root, fn_root_dev_x, fn_root_dev_y, self.Un)
+            print("Error in L2 space : {0}".format(l2_error))
+            print("Error in H10 space: {0} estimated in {1:2} seconds".format(h10_error, time.time() - part_time))
 
     def error_in_point(self, x, y):
         triangle_idx = self.triandulation.find_exactly_element(self.square_size, self.n_iter, x, y)
@@ -323,36 +327,80 @@ class Fem2D:
         else:
             predicted = self.gauss.estimate_point_value_in_triangle(self.list_triangles[triangle_idx], x, y, self.Un)
         # print(triangle.vertices[0].x,triangle.vertices[0].y,triangle.vertices[1].x,triangle.vertices[1].y,triangle.vertices[2].x,triangle.vertices[2].y)
-        real = self.fn_root(x,y)
+
         print("#############################################")
-        print("Real value    : f({0},{1}) = {2}".format(x,y,real))
         print("Estimate value:              {0}".format(predicted))
-        print("Error         :              {0}".format(abs(predicted - real)))
+
+        if (self.fn_root is not None):
+            real = self.fn_root(x, y)
+            print("Real value    : f({0},{1}) = {2}".format(x, y, real))
+            print("Error         :              {0}".format(abs(predicted - real)))
 
 
-def f(x, y):
-    return 2*x*(1-x) + 2*y*(1-y)
+class test1:
+    def f(self, x, y):
+        return 2*x*(1-x) + 2*y*(1-y)
 
-def root_function(x, y):
-    return x*y*(1-x)*(1-y)
+    def root_function(self, x, y):
+        return x*y*(1-x)*(1-y)
 
-def root_function_deviation_x(x, y):
-    return y*(1-y)*(1-2*x)
+    def root_function_deviation_x(self, x, y):
+        return y*(1-y)*(1-2*x)
 
-def root_function_deviation_y(x, y):
-    return x*(1-x)*(1-2*y)
+    def root_function_deviation_y(self, x, y):
+        return x*(1-x)*(1-2*y)
 
-def r(x, y):
-    return 0
+    def r(self, x, y):
+        return 0
 
-def p(x,y):
-    return 1
+    def p(self, x,y):
+        return 1
+
+class test2:
+    def __init__(self):
+        self.a = 10
+        self.a2 = self.a**2
+
+    def f(self, x, y):
+        # 4*a^2*(1-a*r^2)*e^(-a^2*r^2)
+        r2 = (x-0.5)**2 + (y-0.5)**2
+        # print("xxx", 4*self.a2*(1-self.a*r2)*exp(-self.a2*r2), x, y, self.a, self.a2, r2)
+        return 4*self.a2*(1-self.a*r2)*exp(-self.a2*r2)
+
+    def root_function(self, x, y):
+        r2 = (x - 0.5) ** 2 + (y - 0.5) ** 2
+        return self.a * exp(-self.a*r2)
+
+    def root_function_deviation_x(self, x, y):
+        return None
+
+    def root_function_deviation_y(self, x, y):
+        return None
+
+    def r(self, x, y):
+        return 0
+
+    def p(self, x,y):
+        return 1
+
+
+
+# print("Processing finite element method with function -Uxx - Uyy = f")
+# temp = Fem2D()
+# test = test1()
+# temp.dirichlet_boundary(fn_f=test.f, fn_root=test.root_function,
+#                           fn_root_dev_x=test.root_function_deviation_x,
+#                           fn_root_dev_y=test.root_function_deviation_y,
+#                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=False, threshold_adaptive=0.5,
+#                           n_iter=4, max_element = 1e6)
 
 print("Processing finite element method with function -Uxx - Uyy = f")
 temp = Fem2D()
-temp.dirichlet_boundary(fn_f=f, fn_root=root_function,
-                          fn_root_dev_x=root_function_deviation_x,
-                          fn_root_dev_y=root_function_deviation_y,
-                          n_iter=7, square_size=1, fn_r=r, fn_p=p, plot = False)
+test = test2()
+temp.dirichlet_boundary(fn_f=test.f, fn_root=None,
+                          fn_root_dev_x=None,
+                          fn_root_dev_y=None,
+                          fn_r=test.r, fn_p=test.p, plot = False, square_size=1, adaptive=True, threshold_adaptive=0.03,
+                          n_iter=2, max_element = 1e6)
 
 temp.error_in_point(0.69, 0.69)

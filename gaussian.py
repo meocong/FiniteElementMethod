@@ -46,6 +46,26 @@ class IntergralationGaussian:
                         +((155 + sqrt15) / 1200)*g((6 + sqrt15)*(1.0/21), (9 - 2*sqrt15)*(1.0/21))
                         +((155 + sqrt15) / 1200)*g((9 - 2*sqrt15)*(1.0/21), (6 + sqrt15)*(1.0/21)))
 
+    def computing_intergralation_f_on_triangle(self, fn_f, triangle:Triangle):
+        def new_func(csi, eta):
+            x,y = IntergralationGaussian.transfrom_x_y_from_csi_eta(csi, eta,
+                                                                    triangle.vertices[0],
+                                                                    triangle.vertices[1],
+                                                                    triangle.vertices[2])
+            return fn_f(x, y)
+
+        return triangle.area2()*IntergralationGaussian._gaussian(new_func)
+
+    def computing_intergralation_f2_on_triangle(self, fn_f, triangle:Triangle):
+        def new_func(csi, eta):
+            x,y = IntergralationGaussian.transfrom_x_y_from_csi_eta(csi, eta,
+                                                                    triangle.vertices[0],
+                                                                    triangle.vertices[1],
+                                                                    triangle.vertices[2])
+            return fn_f(x, y)**2
+
+        return triangle.area2()*IntergralationGaussian._gaussian(new_func)
+
     @staticmethod
     def computing_intergralation_f_multi_base_function_on_triangle(fn_f, triangle:Triangle, ver1:Vertex,
                                                            ver2:Vertex,
