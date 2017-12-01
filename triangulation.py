@@ -132,8 +132,12 @@ class Triangulation:
             list_triangles = self._triangulation(list_triangles, vertices_inner, vertices_bound, n_iter = n_iter)
 
         if (adaptive == True):
-            list_triangles = self._adaptive_triangulation(list_triangles, vertices_inner, vertices_bound,
-                                         threshold_adaptive, max_element, fn_f)
+            if (threshold_adaptive == None):
+                list_triangles = self._adaptive_triangulation(list_triangles, vertices_inner, vertices_bound,
+                                             threshold_adaptive, max_element, fn_f)
+            else:
+                list_triangles = self._adaptive_triangulation_with_threshold(list_triangles, vertices_inner, vertices_bound,
+                                                              threshold_adaptive, max_element, fn_f)
 
         if (plot == True):
             self.plot_triangles(list_triangles, square_size)

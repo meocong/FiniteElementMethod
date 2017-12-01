@@ -401,6 +401,15 @@ temp.dirichlet_boundary(fn_f=test.f, fn_root=None,
                           fn_root_dev_x=None,
                           fn_root_dev_y=None,
                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=True, threshold_adaptive=0.05,
-                          n_iter=2, max_element = 55)
+                          n_iter=2, max_element = 1e3 + 4e2 + 5e1)
+
+# print("Processing finite element method with function -Uxx - Uyy = f")
+# temp = Fem2D()
+# test = test2()
+# temp.dirichlet_boundary(fn_f=test.f, fn_root=None,
+#                           fn_root_dev_x=None,
+#                           fn_root_dev_y=None,
+#                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=True, threshold_adaptive=None,
+#                           n_iter=2, max_element = 55)
 
 temp.error_in_point(0.69, 0.69)
