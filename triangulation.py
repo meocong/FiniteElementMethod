@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from gaussian import IntergralationGaussian
 from matplotlib.path import Path
 from matplotlib.transforms import Bbox
+from heap import Heap
 
 class Triangulation:
     gauss = IntergralationGaussian()
@@ -45,7 +46,7 @@ class Triangulation:
         # print(self.gauss.computing_intergralation_f_on_triangle(fn_f=fn_f,triangle=triangle))
         return self.gauss.computing_intergralation_f2_on_triangle(fn_f=fn_f,triangle=triangle) >= threshold_adaptive
 
-    def _adaptive_triangulation(self, list_triangles, vertices_inner, vertices_bound, threshold_adaptive, max_element, fn_f):
+    def _adaptive_triangulation_with_threshold(self, list_triangles, vertices_inner, vertices_bound, threshold_adaptive, max_element, fn_f):
         n = len(list_triangles)
         while n < max_element:
             previous_list_triangles = list_triangles
@@ -71,6 +72,18 @@ class Triangulation:
                 break
 
         return list_triangles
+
+    def _adaptive_triangulation(self, list_triangles, vertices_inner, vertices_bound, threshold_adaptive, max_element, fn_f):
+        heap = Heap(fn_f, max_element)
+
+        for triangle in list_triangles:
+            heap.append(triangle)
+
+        while (heap.n < max_element):
+            _, triangle = heap.pop()
+            self._triangulate_one_triangle(triangle, heap, vertices_inner, vertices_bound)
+
+        return [element[1] for element in heap.list[1:max_element + 1]]
 
     def init_triangles(self, square_size):
         list_triangles = []

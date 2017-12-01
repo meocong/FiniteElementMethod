@@ -265,6 +265,7 @@ class Fem2D:
 
     def dirichlet_boundary(self, fn_f, fn_root, fn_root_dev_x, fn_root_dev_y, fn_r, fn_p, plot,
                            square_size, adaptive, threshold_adaptive, n_iter, max_element):
+        max_element = int(max_element)
         time_start = time.time()
 
         self.fn_root = fn_root
@@ -300,7 +301,7 @@ class Fem2D:
         # print("A", self.A)
         # print("F", self.F)
 
-        print("Solving equations problem by using Preconditioner onjugate gradient method")
+        print("Solving equations problem by using Preconditioner conjugate gradient method")
         # self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
         self.Un, time_iter = self.cg_method_optimize(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
         print("Solved PCG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
@@ -368,8 +369,7 @@ class test2:
         return 4*self.a2*(1-self.a*r2)*exp(-self.a2*r2)
 
     def root_function(self, x, y):
-        r2 = (x - 0.5) ** 2 + (y - 0.5) ** 2
-        return self.a * exp(-self.a*r2)
+        return None
 
     def root_function_deviation_x(self, x, y):
         return None
@@ -400,7 +400,7 @@ test = test2()
 temp.dirichlet_boundary(fn_f=test.f, fn_root=None,
                           fn_root_dev_x=None,
                           fn_root_dev_y=None,
-                          fn_r=test.r, fn_p=test.p, plot = False, square_size=1, adaptive=True, threshold_adaptive=0.03,
-                          n_iter=2, max_element = 1e6)
+                          fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=True, threshold_adaptive=0.05,
+                          n_iter=2, max_element = 1e3)
 
 temp.error_in_point(0.69, 0.69)
