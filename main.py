@@ -401,6 +401,6 @@ temp.dirichlet_boundary(fn_f=test.f, fn_root=None,
                           fn_root_dev_x=None,
                           fn_root_dev_y=None,
                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=True, threshold_adaptive=0.05,
-                          n_iter=2, max_element = 1e3)
+                          n_iter=2, max_element = 55)
 
 temp.error_in_point(0.69, 0.69)

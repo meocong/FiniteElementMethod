@@ -83,7 +83,7 @@ class Triangulation:
             _, triangle = heap.pop()
             self._triangulate_one_triangle(triangle, heap, vertices_inner, vertices_bound)
 
-        return [element[1] for element in heap.list[1:max_element + 1]]
+        return [element[1] for element in heap.list[1:heap.n + 1]]
 
     def init_triangles(self, square_size):
         list_triangles = []
