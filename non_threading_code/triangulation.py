@@ -1,4 +1,4 @@
-from triangle import Triangle
+from shape.triangle import Triangle
 from vertices import Vertex, ListVertices
 import matplotlib.pyplot as plt
 from matplotlib.path import Path

@@ -1,5 +1,5 @@
 from math import sqrt
-from triangle import Triangle
+from shape.triangle import Triangle
 from vertices import Vertex
 
 class IntergralationGaussian:
