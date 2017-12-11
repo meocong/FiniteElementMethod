@@ -136,13 +136,13 @@ class Triangulation:
         if (n_iter > 0):
             list_triangles = self._triangulation(list_triangles, vertices_inner, vertices_bound, n_iter = n_iter)
 
-        if (adaptive == True):
-            if (threshold_adaptive == None):
-                list_triangles = self._adaptive_triangulation(list_triangles, vertices_inner, vertices_bound,
-                                             threshold_adaptive, max_element, fn_f)
-            else:
-                list_triangles = self._adaptive_triangulation_with_threshold(list_triangles, vertices_inner, vertices_bound,
-                                                              threshold_adaptive, max_element, fn_f)
+        # if (adaptive == True):
+        #     if (threshold_adaptive == None):
+        #         list_triangles = self._adaptive_triangulation(list_triangles, vertices_inner, vertices_bound,
+        #                                      threshold_adaptive, max_element, fn_f)
+        #     else:
+        #         list_triangles = self._adaptive_triangulation_with_threshold(list_triangles, vertices_inner, vertices_bound,
+        #                                                       threshold_adaptive, max_element, fn_f)
 
         if (plot == True):
             print("Plotting...")
@@ -185,9 +185,22 @@ class Triangulation:
 
         return vertices
 
-    def init_triangles_in_shape(self, vertices, option):
+    def init_triangles_in_shape(self, vertices, option, max_vertice_add_each_edge, max_vertice_added_near_each_vertice):
+        temp = []
+        for idx, vertice in enumerate(vertices):
+            if (idx < len(vertices) - 1):
+                nex_vertice = vertices[idx + 1]
+            else:
+                nex_vertice = vertices[0]
+
+            temp.extend([[vertice[0] + (nex_vertice[0] - vertice[0])/max_vertice_add_each_edge * i,
+                          vertice[1] + (nex_vertice[1] - vertice[1])/max_vertice_add_each_edge * i]
+                         for i in range(0, max_vertice_add_each_edge)])
+        vertices = temp
+
         segments = [[i, i + 1] for i in range(0, len(vertices) - 1)]
         segments.append([len(vertices) - 1, 0])
+
         polygon = {'vertices': np.array(vertices), 'segments': np.array(segments)}
 
         print("Free Triangulation...")
@@ -240,12 +253,72 @@ class Triangulation:
 
         return list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y
 
+    def re_triangulation_on_failue(self, vertices, vertices_inner, vertices_bound):
+        segments = [[i, i + 1] for i in range(0, len(vertices) - 1)]
+        segments.append([len(vertices) - 1, 0])
+
+        vertices.extend([[vertice.x, vertice.y] for vertice in vertices_inner.list])
+        vertices.extend([[vertice.x, vertice.y] for vertice in vertices_bound.list])
+        polygon = {'vertices': np.array(vertices), 'segments': np.array(segments)}
+        print("Free Triangulation...")
+        cncfq20adt = triangulate(polygon, "pq30D")
+        print("Finishing free triangulation")
+        list_triangles = []
+        vertices_inner = ListVertices(on_bound=False)
+        vertices_bound = ListVertices(on_bound=True)
+
+        last = 0
+        A = []
+        min_x = 99999999
+        max_x = -99999999
+
+        min_y = 99999999
+        max_y = -99999999
+        for idx, vertice in enumerate(cncfq20adt['vertices']):
+            x = vertice[0]
+            y = vertice[1]
+
+            min_y = min(min_y, y)
+            max_y = max(max_y, y)
+            min_x = min(min_x, x)
+            max_x = max(max_x, x)
+
+            if (cncfq20adt['vertex_markers'][idx][0] == 0):
+                vertices_inner.append(vertice[0], vertice[1])
+                A.append(last)
+            else:
+                vertices_bound.append(vertice[0], vertice[1])
+                last += 1
+                A.append(last)
+
+        for i, triangle in enumerate(cncfq20adt['triangles']):
+            if (cncfq20adt['vertex_markers'][triangle[0]][0] == 0):
+                ver1 = vertices_inner.list[triangle[0] - A[triangle[0]]]
+            else:
+                ver1 = vertices_bound.list[A[triangle[0]] - 1]
+
+            if (cncfq20adt['vertex_markers'][triangle[1]][0] == 0):
+                ver2 = vertices_inner.list[triangle[1] - A[triangle[1]]]
+            else:
+                ver2 = vertices_bound.list[A[triangle[1]] - 1]
+
+            if (cncfq20adt['vertex_markers'][triangle[2]][0] == 0):
+                ver3 = vertices_inner.list[triangle[2] - A[triangle[2]]]
+            else:
+                ver3 = vertices_bound.list[A[triangle[2]] - 1]
+
+            list_triangles.append(Triangle(ver1, ver2, ver3))
+
+        return list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y
+
     def process_free_shape(self, shape_dir, is_map, shape, map_width, map_height, option, n_iter, plot=False, adaptive = False,
-                           threshold_adaptive = 10, fn_f = None, max_element = 1000000):
+                           threshold_adaptive = 10, fn_f = None, max_element = 1000000, max_vertice_add_each_edge = 0,
+                           max_vertice_added_near_each_vertice=0):
         if (shape_dir is not None):
             shape = self._read_shape_from_dir(shape_dir, is_map, map_width, map_height)
 
-        list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y = self.init_triangles_in_shape(shape, option)
+        list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y = \
+            self.init_triangles_in_shape(shape, option,max_vertice_add_each_edge,max_vertice_added_near_each_vertice)
 
         # if (n_iter > 0):
         #     list_triangles = self._triangulation(list_triangles, vertices_inner, vertices_bound, n_iter = n_iter)
@@ -257,6 +330,8 @@ class Triangulation:
             else:
                 list_triangles = self._adaptive_triangulation_with_threshold(list_triangles, vertices_inner, vertices_bound,
                                                               threshold_adaptive, max_element, fn_f)
+            list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y \
+            = self.re_triangulation_on_failue(shape, vertices_inner, vertices_bound)
 
         if (plot == True):
             print("Plotting...")

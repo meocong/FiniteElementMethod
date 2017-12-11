@@ -325,7 +325,7 @@ class Fem2D:
     def dirichlet_boundary_free_shape(self, fn_f, fn_root, fn_root_dev_x, fn_root_dev_y, fn_r, fn_p, plot,
                            adaptive, threshold_adaptive, n_iter, max_element, shape_dir = None, is_map = False,
                                       map_width = None, map_height = None,
-                                      shape = None, option=""):
+                                      shape = None, option="", max_vertice_add_each_edge=0, max_vertice_added_near_each_vertice=0):
         max_element = int(max_element)
         time_start = time.time()
 
@@ -340,7 +340,8 @@ class Fem2D:
                                                   shape=shape, option=option,
                                                   n_iter=n_iter, plot=plot, adaptive=adaptive,
                                               threshold_adaptive=threshold_adaptive, fn_f =fn_f,
-                                              max_element=max_element)
+                                              max_element=max_element, max_vertice_add_each_edge=max_vertice_add_each_edge,
+                                                  max_vertice_added_near_each_vertice=max_vertice_added_near_each_vertice)
         n_element = len(self.list_triangles)
 
         part_time = time.time()
@@ -422,7 +423,7 @@ class test1:
 
 class test2:
     def __init__(self):
-        self.a = 4
+        self.a = 10
         self.a2 = self.a**2
 
     def f(self, x, y):
@@ -477,8 +478,8 @@ class test3:
 # temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
 #                           fn_root_dev_x=test.root_function_deviation_x,
 #                           fn_root_dev_y=test.root_function_deviation_y,
-#                           fn_r=test.r, fn_p=test.p, plot = False, square_size=1, adaptive=False, threshold_adaptive=0.5,
-#                           n_iter=4, max_element = 1e7)
+#                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=False, threshold_adaptive=0.5,
+#                           n_iter=5, max_element = 1e7)
 # for i in range(0,10):
 #     temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
 #                                       fn_root_dev_x=test.root_function_deviation_x,
@@ -490,7 +491,7 @@ class test3:
 
 
 
-############## Finite element method on rectangle with non-heap(threshold) adaptive devided ###################
+# ############## Finite element method on rectangle with non-heap(threshold) adaptive devided ###################
 # print("Processing finite element method with function -Uxx - Uyy = f")
 # temp = Fem2D()
 # test = test2()
@@ -513,16 +514,17 @@ class test3:
 
 
 ############## Finite element method on rectangle with free heap adaptive devided ###################
-# print("Processing finite element method with function -Uxx - Uyy = f")
-# temp = Fem2D()
-# test = test2()
-# temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=None,
-#                           fn_root_dev_x=None,
-#                           fn_root_dev_y=None,
-#                           fn_r=test.r, fn_p=test.p, plot = True, adaptive=True, threshold_adaptive=None,
-#                           n_iter=2, max_element = 1e3 + 6e2 + 8e1, shape=[[0,0],[1,0],[1,1],[0,1]],
-#                                    is_map=True, map_width=1, map_height=1, option="pq30a.01D")
-#
+print("Processing finite element method with function -Uxx - Uyy = f")
+temp = Fem2D()
+test = test1()
+temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=test.root_function,
+                          fn_root_dev_x=test.root_function_deviation_x,
+                          fn_root_dev_y=test.root_function_deviation_y,
+                          fn_r=test.r, fn_p=test.p, plot = True, adaptive=True, threshold_adaptive=None,
+                          n_iter=2, max_element = 5000, shape=[[0,0],[1,0],[1,1],[0,1]],
+                                   is_map=True, map_width=1, map_height=1, option="pq30D", max_vertice_add_each_edge=100,
+                                   max_vertice_added_near_each_vertice=4)
+
 # temp = Fem2D()
 # test = test1()
 # for i in range(0,10):

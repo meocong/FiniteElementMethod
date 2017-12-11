@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial import Delaunay, delaunay_plot_2d
 from triangle import triangulate, plot as tplot
 
-lake_superior = {'vertices':np.array([[0,0],[1,0],[1,1],[0,1]]), 'segments':np.array([[0,1],[1,2],[2,3],[3,0]])}
+lake_superior = {'vertices':np.array([[0,0],[1,0],[1,1],[0,1],[0.25,0.25],[0.75,0.75]]), 'segments':np.array([[0,1],[1,2],[2,3],[3,0]])}
 def read_poly(file_name):
     """
     Simple poly-file reader, that creates a python dictionary
@@ -89,7 +89,7 @@ def read_poly(file_name):
 # tplot.plot(ax, **cncfq20dt)
 # plt.show()
 
-cncfq20adt = triangulate(lake_superior, 'pq30a.1D')
+cncfq20adt = triangulate(lake_superior, 'pq30D')
 print(cncfq20adt)
 plt.figure(figsize=(14, 14))
 ax = plt.subplot(111, aspect='equal')
