@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="0542a838-e1e0-4143-8b62-33e23fd269a7" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gaussian.py" afterPath="$PROJECT_DIR$/gaussian.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/heap.py" afterPath="$PROJECT_DIR$/heap.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.py" afterPath="$PROJECT_DIR$/main.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/shape/triangle.py" afterPath="$PROJECT_DIR$/shape/triangle.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/triangulation.py" afterPath="$PROJECT_DIR$/triangulation.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -20,8 +17,8 @@
     <SUITE FILE_PATH="coverage/FiniteElementMethod$triangulation.coverage" NAME="triangulation Coverage Results" MODIFIED="1512959160154" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/FiniteElementMethod$testing__2_.coverage" NAME="testing (2) Coverage Results" MODIFIED="1512951981248" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/testing triangulation" />
     <SUITE FILE_PATH="coverage/FiniteElementMethod$testing_vnm_polygon.coverage" NAME="testing_vnm_polygon Coverage Results" MODIFIED="1512314592135" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/testing triangulation" />
-    <SUITE FILE_PATH="coverage/FiniteElementMethod$main.coverage" NAME="main Coverage Results" MODIFIED="1515381831055" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/FiniteElementMethod$error_plotting.coverage" NAME="error_plotting Coverage Results" MODIFIED="1512355583636" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/FiniteElementMethod$main.coverage" NAME="main Coverage Results" MODIFIED="1515386448781" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/FiniteElementMethod$error_plotting.coverage" NAME="error_plotting Coverage Results" MODIFIED="1515384624721" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/FiniteElementMethod$gaussian.coverage" NAME="gaussian Coverage Results" MODIFIED="1511879143663" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/FiniteElementMethod$testing__1_.coverage" NAME="testing (1) Coverage Results" MODIFIED="1512231933859" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/building_with_cypthon" />
     <SUITE FILE_PATH="coverage/FiniteElementMethod$testing.coverage" NAME="testing Coverage Results" MODIFIED="1512313183772" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/non_threading_code" />
@@ -31,8 +28,8 @@
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="574">
-              <caret line="585" column="30" lean-forward="false" selection-start-line="585" selection-start-column="30" selection-end-line="585" selection-end-column="30" />
+            <state relative-caret-position="199">
+              <caret line="561" column="25" lean-forward="true" selection-start-line="561" selection-start-column="25" selection-end-line="561" selection-end-column="25" />
               <folding>
                 <element signature="e#0#39#0" expanded="true" />
               </folding>
@@ -43,8 +40,8 @@
       <file leaf-file-name="error_plotting.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/error_plotting.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="6" column="26" lean-forward="true" selection-start-line="6" selection-start-column="26" selection-end-line="6" selection-end-column="26" />
+            <state relative-caret-position="285">
+              <caret line="19" column="26" lean-forward="true" selection-start-line="19" selection-start-column="26" selection-end-line="19" selection-end-column="26" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -55,8 +52,8 @@
       <file leaf-file-name="triangulation.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/triangulation.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1284">
-              <caret line="152" column="24" lean-forward="true" selection-start-line="152" selection-start-column="24" selection-end-line="152" selection-end-column="24" />
+            <state relative-caret-position="216">
+              <caret line="323" column="47" lean-forward="false" selection-start-line="323" selection-start-column="44" selection-end-line="323" selection-end-column="47" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
               </folding>
@@ -68,7 +65,7 @@
         <entry file="file://$PROJECT_DIR$/heap.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="465">
-              <caret line="97" column="62" lean-forward="true" selection-start-line="97" selection-start-column="62" selection-end-line="97" selection-end-column="62" />
+              <caret line="97" column="69" lean-forward="true" selection-start-line="97" selection-start-column="69" selection-end-line="97" selection-end-column="69" />
               <folding>
                 <element signature="e#0#43#0" expanded="true" />
               </folding>
@@ -89,8 +86,8 @@
       <file leaf-file-name="gaussian.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gaussian.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="336">
-              <caret line="122" column="14" lean-forward="true" selection-start-line="122" selection-start-column="14" selection-end-line="122" selection-end-column="14" />
+            <state relative-caret-position="276">
+              <caret line="72" column="89" lean-forward="true" selection-start-line="72" selection-start-column="89" selection-end-line="72" selection-end-column="89" />
               <folding>
                 <element signature="e#0#21#0" expanded="true" />
               </folding>
@@ -131,8 +128,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>_gaussian</find>
-      <find>Triangle</find>
       <find>estimate_error_on_element_l2_space</find>
       <find>smoothed_aggregation_solver</find>
       <find>xxxxxxxx</find>
@@ -161,6 +156,8 @@
       <find>computing_intergralation_u_deri_multi_u_deri_function_on_triangle</find>
       <find>computing_intergralation_f_multi_base_function_on_triangle</find>
       <find>using_element_center</find>
+      <find>option</find>
+      <find>30d</find>
     </findStrings>
     <replaceStrings>
       <replace>lil_matrix</replace>
@@ -428,9 +425,9 @@
     <recent_temporary>
       <list size="5">
         <item index="0" class="java.lang.String" itemvalue="Python.main" />
-        <item index="1" class="java.lang.String" itemvalue="Python.triangulation" />
-        <item index="2" class="java.lang.String" itemvalue="Python.testing (2)" />
-        <item index="3" class="java.lang.String" itemvalue="Python.error_plotting" />
+        <item index="1" class="java.lang.String" itemvalue="Python.error_plotting" />
+        <item index="2" class="java.lang.String" itemvalue="Python.triangulation" />
+        <item index="3" class="java.lang.String" itemvalue="Python.testing (2)" />
         <item index="4" class="java.lang.String" itemvalue="Python.testing_vnm_polygon" />
       </list>
     </recent_temporary>
@@ -753,18 +750,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/vertices.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/anaconda/lib/python3.6/site-packages/triangle/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="229">
           <caret line="46" column="0" lean-forward="false" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vertices.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="6" column="0" lean-forward="true" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -779,8 +776,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/error_plotting.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="26" lean-forward="true" selection-start-line="6" selection-start-column="26" selection-end-line="6" selection-end-column="26" />
+        <state relative-caret-position="285">
+          <caret line="19" column="26" lean-forward="true" selection-start-line="19" selection-start-column="26" selection-end-line="19" selection-end-column="26" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
@@ -790,37 +787,37 @@
     <entry file="file://$PROJECT_DIR$/heap.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="465">
-          <caret line="97" column="62" lean-forward="true" selection-start-line="97" selection-start-column="62" selection-end-line="97" selection-end-column="62" />
+          <caret line="97" column="69" lean-forward="true" selection-start-line="97" selection-start-column="69" selection-end-line="97" selection-end-column="69" />
           <folding>
             <element signature="e#0#43#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/triangulation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1284">
-          <caret line="152" column="24" lean-forward="true" selection-start-line="152" selection-start-column="24" selection-end-line="152" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#35#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gaussian.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="122" column="14" lean-forward="true" selection-start-line="122" selection-start-column="14" selection-end-line="122" selection-end-column="14" />
+        <state relative-caret-position="276">
+          <caret line="72" column="89" lean-forward="true" selection-start-line="72" selection-start-column="89" selection-end-line="72" selection-end-column="89" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/triangulation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="323" column="47" lean-forward="false" selection-start-line="323" selection-start-column="44" selection-end-line="323" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="574">
-          <caret line="585" column="30" lean-forward="false" selection-start-line="585" selection-start-column="30" selection-end-line="585" selection-end-column="30" />
+        <state relative-caret-position="199">
+          <caret line="561" column="25" lean-forward="true" selection-start-line="561" selection-start-column="25" selection-end-line="561" selection-end-column="25" />
           <folding>
             <element signature="e#0#39#0" expanded="true" />
           </folding>

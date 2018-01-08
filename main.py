@@ -277,7 +277,8 @@ class Fem2D:
         print("Deviding triangle element")
 
         self.list_triangles, list_inner_vertices, list_bound_vertices, dict_segment = \
-            self.triandulation.initalize_process_square(square_size=square_size, n_iter=n_iter, plot=plot, fn_f =fn_f)
+            self.triandulation.initalize_process_square(adaptive=adaptive,
+                                                        square_size=square_size, n_iter=n_iter, plot=plot, fn_f =fn_f)
         n_element = len(self.list_triangles)
 
         part_time = time.time()
@@ -488,10 +489,10 @@ class test2:
         # 4*a^2*(1-a*r^2)*e^(-a^2*r^2)
         r2 = (x-0.5)**2 + (y-0.5)**2
         # print("xxx", 4*self.a2*(1-self.a*r2)*exp(-self.a2*r2), x, y, self.a, self.a2, r2)
-        return 4000*self.a2*(1-self.a*r2)*np.exp(-self.a2*r2)
+        return 400*self.a2*(1-self.a*r2)*np.exp(-self.a2*r2)
 
     def root_function(self, x, y):
-        return self.a * np.exp(-self.a * (x-0.5)**2 + (y-0.5)**2)*1000
+        return self.a * np.exp(-self.a * (x-0.5)**2 + (y-0.5)**2)*100
 
     def root_function_deviation_x(self, x, y):
         return 0
@@ -530,14 +531,14 @@ class test3:
 
 
 ############## Finite element method on rectangle with equally devided ###################
-print("Processing finite element method with function -Uxx - Uyy = f")
-temp = Fem2D()
-test = test2()
-temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
-                          fn_root_dev_x=test.root_function_deviation_x,
-                          fn_root_dev_y=test.root_function_deviation_y,
-                          fn_r=test.r, fn_p=test.p, plot = False, square_size=1, adaptive=True,
-                          n_iter=3, max_element = 40000)
+# print("Processing finite element method with function -Uxx - Uyy = f")
+# temp = Fem2D()
+# test = test2()
+# temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
+#                           fn_root_dev_x=test.root_function_deviation_x,
+#                           fn_root_dev_y=test.root_function_deviation_y,
+#                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=True,
+#                           n_iter=3, max_element = 1024)
 
 # for i in range(0,10):
 #     temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
@@ -551,13 +552,13 @@ temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
 ############## Finite element method on rectangle with free heap adaptive devided ###################
 # print("Processing finite element method with function -Uxx - Uyy = f")
 # temp = Fem2D()
-# test = test2()
+# test = test1()
 # temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=test.root_function,
 #                           fn_root_dev_x=test.root_function_deviation_x,
 #                           fn_root_dev_y=test.root_function_deviation_y,
 #                           fn_r=test.r, fn_p=test.p, plot = True, adaptive=True,
-#                           n_iter=2, max_element = 40200, shape=[[0,0],[1,0],[1,1],[0,1]],
-#                                    is_map=True, map_width=1, map_height=1, option="pq30D", max_vertice_add_each_edge=20,
+#                           n_iter=2, max_element = 2024, shape=[[0,0],[1,0],[1,1],[0,1]],
+#                                    is_map=True, map_width=1, map_height=1, option="pq30Da.005", max_vertice_add_each_edge=30,
 #                                    max_vertice_added_near_each_vertice=4)
 
 # temp = Fem2D()
@@ -571,16 +572,16 @@ temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
 #                                        is_map=True, map_width=1, map_height=1, option="pq30a.01D")
 
 ############## Finite element method on ha noi map with free heap adaptive devided ###################
-# print("Processing finite element method with function -Uxx - Uyy = f")
-# temp = Fem2D()
-# test = test2()
-# temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=None,
-#                           fn_root_dev_x=None,
-#                           fn_root_dev_y=None,
-#                           fn_r=test.r, fn_p=test.p, plot = True, adaptive=False,
-#                           n_iter=2, max_element = 1e3, shape_dir="/Users/nguyenviet/project/FiniteElementMethod/testing triangulation/hanoi_polygon.txt",
-#                                    is_map=True, map_width=8/5, map_height=1, option="pq20D")
+print("Processing finite element method with function -Uxx - Uyy = f")
+temp = Fem2D()
+test = test2()
+temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=None,
+                          fn_root_dev_x=None,
+                          fn_root_dev_y=None,
+                          fn_r=test.r, fn_p=test.p, plot = True, adaptive=False,
+                          n_iter=2, max_element = 1e3, shape_dir="/Users/nguyenviet/project/FiniteElementMethod/testing triangulation/hanoi_polygon.txt",
+                                   is_map=True, map_width=8/5, map_height=1, option="pq20Da.00000001")
 
 
 
-temp.error_in_point(0.51, 0.51)
+temp.error_in_point(0.51, 0.52)

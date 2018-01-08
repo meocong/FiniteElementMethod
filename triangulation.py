@@ -150,14 +150,17 @@ class Triangulation:
 
         return trian_idx
 
-    def initalize_process_square(self, square_size, n_iter, plot=False, fn_f = None):
+    def initalize_process_square(self, adaptive, square_size, n_iter, plot=False, fn_f = None):
         list_triangles, vertices_inner, vertices_bound = self.init_triangles(square_size)
 
         if (n_iter > 0):
             list_triangles = self._triangulation(list_triangles, vertices_inner, vertices_bound, n_iter = n_iter)
 
-        list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y, dict_segment \
-            = self.re_triangulation_on_failue(list_triangles, vertices_inner, vertices_bound)
+        if (adaptive == True):
+            list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y, dict_segment \
+                = self.re_triangulation_on_failue(list_triangles, vertices_inner, vertices_bound)
+        else:
+            dict_segment = {}
 
         if (plot == True):
             print("Plotting...")
