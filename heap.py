@@ -1,4 +1,6 @@
 from gaussian import IntergralationGaussian
+from shape.triangle import Triangle
+from vertices import Vertex, ListVertices
 
 class Heap:
     gauss = IntergralationGaussian()
@@ -49,8 +51,52 @@ class Heap:
 
         self._up_heap(self.n)
 
-    def append(self, element):
-        self.push((self.gauss.computing_intergralation_f2_on_triangle(fn_f=self.fn_f,triangle=element), element))
+    def computing_gradient_error_on_element(self, triangle:Triangle, list_triangles, dict_segment, Un):
+        def get_Un(ver:Vertex):
+            if (ver.on_bound == True):
+                return 0
+            else:
+                return Un[ver.idx]
+
+        def get_Grad(element:Triangle):
+            gradUvertexX = 0
+            gradUvertexY = 0
+
+            ver1 = element.vertices[0]
+            ver2 = element.vertices[1]
+            ver3 = element.vertices[2]
+            gradUvertexX += get_Un(ver1) * (ver2.x - ver3.x)
+            gradUvertexY += get_Un(ver1) * (ver2.y - ver3.y)
+
+            ver1 = element.vertices[1]
+            ver2 = element.vertices[2]
+            ver3 = element.vertices[0]
+            gradUvertexX += get_Un(ver1) * (ver2.x - ver3.x)
+            gradUvertexY += get_Un(ver1) * (ver2.y - ver3.y)
+
+            ver1 = element.vertices[2]
+            ver2 = element.vertices[0]
+            ver3 = element.vertices[1]
+            gradUvertexX += get_Un(ver1) * (ver2.x - ver3.x)
+            gradUvertexY += get_Un(ver1) * (ver2.y - ver3.y)
+            return gradUvertexX/element.area2()/8, gradUvertexY/element.area2()/8
+
+        value = 0
+        grad_mainX, grad_mainY = get_Grad(triangle)
+        for i in range(0,3):
+            ver1 = triangle.vertices[i-1]
+            ver2 = triangle.vertices[i]
+
+            if (ver1.on_bound != True or ver2.on_bound != True):
+                another_grad_mainX, another_grad_mainY = get_Grad(list_triangles[dict_segment[str(ver2.idx) + " " + str(ver1.idx)]])
+
+                value += -(ver2.y - ver1.y) * (grad_mainX - another_grad_mainX) + (ver2.x - ver1.x) * (grad_mainY - another_grad_mainY) / \
+                         ((ver2.x - ver1.x)**2 + (ver2.y - ver1.y)**2)**(1/2)
+        return (triangle.area2()/2)**(1/4)/2 * value
+
+    def append(self, element:Triangle, list_triangles, dict_segment, Un):
+        self.push((self.gauss.computing_intergralation_adaptive_error_on_triangle(fn_f=self.fn_f,triangle=element)
+                   + self.computing_gradient_error_on_element(element, list_triangles, dict_segment, Un), element))
 
     def pop(self):
         if (self.n > 0):

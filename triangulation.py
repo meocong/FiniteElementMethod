@@ -78,15 +78,35 @@ class Triangulation:
 
         return list_triangles
 
-    def _adaptive_triangulation(self, list_triangles, vertices_inner, vertices_bound, threshold_adaptive, max_element, fn_f):
+
+    def _adaptive_triangulation(self, list_triangles, vertices_inner, vertices_bound, max_element, fn_f, Un, dict_segment):
+        def _triangulate_one_triangle_heap(triangle):
+            vertex1 = triangle.vertices[0]
+            vertex2 = triangle.vertices[1]
+            vertex3 = triangle.vertices[2]
+
+            center_edge12 = self.vertices_append_center_edge(vertices_inner, vertices_bound, vertex1, vertex2)
+            center_edge13 = self.vertices_append_center_edge(vertices_inner, vertices_bound, vertex1, vertex3)
+            center_edge23 = self.vertices_append_center_edge(vertices_inner, vertices_bound, vertex2, vertex3)
+
+            list_triangles.append(Triangle(vertex1, center_edge12, center_edge13))
+            list_triangles.append(Triangle(vertex2, center_edge23, center_edge12))
+            list_triangles.append(Triangle(vertex3, center_edge23, center_edge13))
+            list_triangles.append(Triangle(center_edge12, center_edge13, center_edge23))
+
         heap = Heap(fn_f, max_element)
 
         for triangle in list_triangles:
-            heap.append(triangle)
+            heap.append(triangle, list_triangles, dict_segment, Un)
 
-        while (heap.n < max_element):
+        n_element = len(list_triangles)/10
+        temp = []
+        while (heap.n < max_element and n_element > 0):
             _, triangle = heap.pop()
-            self._triangulate_one_triangle(triangle, heap, vertices_inner, vertices_bound)
+            temp.append(triangle)
+            n_element -= 1
+        for triangle in temp:
+            _triangulate_one_triangle_heap(triangle)
 
         return [element[1] for element in heap.list[1:heap.n + 1]]
 
@@ -130,19 +150,14 @@ class Triangulation:
 
         return trian_idx
 
-    def process_square(self, square_size, n_iter, plot=False, adaptive = False, threshold_adaptive = 10, fn_f = None, max_element = 1000000):
+    def initalize_process_square(self, square_size, n_iter, plot=False, fn_f = None):
         list_triangles, vertices_inner, vertices_bound = self.init_triangles(square_size)
 
         if (n_iter > 0):
             list_triangles = self._triangulation(list_triangles, vertices_inner, vertices_bound, n_iter = n_iter)
 
-        # if (adaptive == True):
-        #     if (threshold_adaptive == None):
-        #         list_triangles = self._adaptive_triangulation(list_triangles, vertices_inner, vertices_bound,
-        #                                      threshold_adaptive, max_element, fn_f)
-        #     else:
-        #         list_triangles = self._adaptive_triangulation_with_threshold(list_triangles, vertices_inner, vertices_bound,
-        #                                                       threshold_adaptive, max_element, fn_f)
+        list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y, dict_segment \
+            = self.re_triangulation_on_failue(list_triangles, vertices_inner, vertices_bound)
 
         if (plot == True):
             print("Plotting...")
@@ -156,7 +171,7 @@ class Triangulation:
             self.plot_function_adaptive(ax, fn_f, list_triangles, vertices_inner, vertices_bound)
             plt.show()
 
-        return list_triangles, vertices_inner, vertices_bound
+        return list_triangles, vertices_inner, vertices_bound, dict_segment
 
     def turn_to_2D(self, long, latt, MAP_WIDTH, MAP_HEIGHT):
         return ((MAP_WIDTH / 360.0) * (180 + long)), MAP_HEIGHT - ((MAP_HEIGHT / 180.0) * (90.0 - latt))
@@ -224,7 +239,6 @@ class Triangulation:
             max_y = max(max_y, y)
             min_x = min(min_x, x)
             max_x = max(max_x, x)
-
             if (cncfq20adt['vertex_markers'][idx][0] == 0):
                 vertices_inner.append(vertice[0], vertice[1])
                 A.append(last)
@@ -233,6 +247,7 @@ class Triangulation:
                 last += 1
                 A.append(last)
 
+        dict_segment = {}
         for i, triangle in enumerate(cncfq20adt['triangles']):
             if (cncfq20adt['vertex_markers'][triangle[0]][0] == 0):
                 ver1 = vertices_inner.list[triangle[0] - A[triangle[0]]]
@@ -249,19 +264,61 @@ class Triangulation:
             else:
                 ver3 = vertices_bound.list[A[triangle[2]] - 1]
 
+            if (ver1.x - ver2.x) * (ver1.y - ver3.y) - (ver1.y - ver2.y) * (ver1.x - ver3.x) < 0:
+                ver1, ver2, ver3 = (ver3, ver2, ver1)
+
+            edge1 = str(ver3.idx) + " " + str(ver1.idx)
+            dict_segment[edge1] = i
+
+            edge1 = str(ver1.idx) + " " + str(ver2.idx)
+            dict_segment[edge1] = i
+
+            edge1 = str(ver2.idx) + " " + str(ver3.idx)
+            dict_segment[edge1] = i
+
             list_triangles.append(Triangle(ver1, ver2, ver3))
 
-        return list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y
+        return list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y, dict_segment
 
-    def re_triangulation_on_failue(self, vertices, vertices_inner, vertices_bound):
-        segments = [[i, i + 1] for i in range(0, len(vertices) - 1)]
-        segments.append([len(vertices) - 1, 0])
-
+    def re_triangulation_on_failue(self, triangles, vertices_inner, vertices_bound):
+        vertices = []
+        vertex_markers = []
         vertices.extend([[vertice.x, vertice.y] for vertice in vertices_inner.list])
+        vertex_markers.extend([[0] for vertice in vertices_inner.list])
         vertices.extend([[vertice.x, vertice.y] for vertice in vertices_bound.list])
-        polygon = {'vertices': np.array(vertices), 'segments': np.array(segments)}
+        vertex_markers.extend([[1] for vertice in vertices_bound.list])
+
+        segments = []
+        idx_triangles = []
+        for triangle in triangles:
+            vertice1 = triangle.vertices[0]
+            vertice2 = triangle.vertices[1]
+            vertice3 = triangle.vertices[2]
+
+            if (vertice1.on_bound == True):
+                idx1 = vertices_inner.length + vertice1.idx
+            else:
+                idx1 = vertice1.idx
+
+            if (vertice2.on_bound == True):
+                idx2 = vertices_inner.length + vertice2.idx
+            else:
+                idx2 = vertice2.idx
+
+            if (vertice3.on_bound == True):
+                idx3 = vertices_inner.length + vertice3.idx
+            else:
+                idx3 = vertice3.idx
+
+            segments.append([idx1, idx2])
+            segments.append([idx2, idx3])
+            segments.append([idx3, idx1])
+            idx_triangles.append([idx1, idx2, idx3])
+
+        polygon = {'vertices': np.array(vertices), 'segments': np.array(segments), 'vertex_markers':vertex_markers}
+        # polygon = {'vertices': np.array(vertices), 'segments': np.array(segments), 'triangles':idx_triangles}
         print("Free Triangulation...")
-        cncfq20adt = triangulate(polygon, "pq30D")
+        cncfq20adt = triangulate(polygon, "q30D")
         print("Finishing free triangulation")
         list_triangles = []
         vertices_inner = ListVertices(on_bound=False)
@@ -282,7 +339,6 @@ class Triangulation:
             max_y = max(max_y, y)
             min_x = min(min_x, x)
             max_x = max(max_x, x)
-
             if (cncfq20adt['vertex_markers'][idx][0] == 0):
                 vertices_inner.append(vertice[0], vertice[1])
                 A.append(last)
@@ -291,6 +347,7 @@ class Triangulation:
                 last += 1
                 A.append(last)
 
+        dict_segment = {}
         for i, triangle in enumerate(cncfq20adt['triangles']):
             if (cncfq20adt['vertex_markers'][triangle[0]][0] == 0):
                 ver1 = vertices_inner.list[triangle[0] - A[triangle[0]]]
@@ -307,31 +364,52 @@ class Triangulation:
             else:
                 ver3 = vertices_bound.list[A[triangle[2]] - 1]
 
+            if  (ver1.x - ver2.x) * (ver1.y - ver3.y) - (ver1.y - ver2.y) * (ver1.x - ver3.x) < 0:
+                ver1, ver2, ver3 = (ver3, ver2, ver1)
+
+            edge1 = str(ver3.idx) + " " + str(ver1.idx)
+            dict_segment[edge1] = i
+
+            edge1 = str(ver1.idx) + " " + str(ver2.idx)
+            dict_segment[edge1] = i
+
+            edge1 = str(ver2.idx) + " " + str(ver3.idx)
+            dict_segment[edge1] = i
+
             list_triangles.append(Triangle(ver1, ver2, ver3))
 
-        return list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y
+        return list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y, dict_segment
 
-    def process_free_shape(self, shape_dir, is_map, shape, map_width, map_height, option, n_iter, plot=False, adaptive = False,
-                           threshold_adaptive = 10, fn_f = None, max_element = 1000000, max_vertice_add_each_edge = 0,
+    def initalize_process_free_shape(self, shape_dir, is_map, shape, map_width, map_height, option, plot=False,
+                           fn_f = None, max_vertice_add_each_edge = 0,
                            max_vertice_added_near_each_vertice=0):
         if (shape_dir is not None):
             shape = self._read_shape_from_dir(shape_dir, is_map, map_width, map_height)
 
-        list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y = \
+        list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y, dict_segment = \
             self.init_triangles_in_shape(shape, option,max_vertice_add_each_edge,max_vertice_added_near_each_vertice)
 
-        # if (n_iter > 0):
-        #     list_triangles = self._triangulation(list_triangles, vertices_inner, vertices_bound, n_iter = n_iter)
+        if (plot == True):
+            print("Plotting...")
+            fig = plt.figure(figsize=plt.figaspect(0.5))
 
-        if (adaptive == True):
-            if (threshold_adaptive == None):
-                list_triangles = self._adaptive_triangulation(list_triangles, vertices_inner, vertices_bound,
-                                             threshold_adaptive, max_element, fn_f)
-            else:
-                list_triangles = self._adaptive_triangulation_with_threshold(list_triangles, vertices_inner, vertices_bound,
-                                                              threshold_adaptive, max_element, fn_f)
-            list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y \
-            = self.re_triangulation_on_failue(shape, vertices_inner, vertices_bound)
+            ax = fig.add_subplot(1, 2, 1)
+            self.plot_triangles(ax, list_triangles, vertices_inner, vertices_bound)
+
+            ax = fig.add_subplot(1, 2, 2, projection='3d')
+            # self.plot_function_actual(ax, fn_f, 0, 1, 0, 1)
+            self.plot_function_adaptive(ax, fn_f, list_triangles, vertices_inner, vertices_bound)
+            plt.show()
+        return list_triangles, vertices_inner, vertices_bound, dict_segment
+
+    def process_free_shape_adaptively(self, list_triangles, vertices_inner, vertices_bound, dict_segment, Un,
+                           plot=False, fn_f = None, max_element = 1000000):
+        list_triangles = self._adaptive_triangulation(list_triangles, vertices_inner, vertices_bound,
+                                      max_element, fn_f, Un, dict_segment)
+
+        list_triangles, vertices_inner, vertices_bound, min_x, max_x, min_y, max_y, dict_segment \
+        = self.re_triangulation_on_failue(list_triangles, vertices_inner, vertices_bound)
+
 
         if (plot == True):
             print("Plotting...")
@@ -345,7 +423,7 @@ class Triangulation:
             self.plot_function_adaptive(ax, fn_f, list_triangles, vertices_inner, vertices_bound)
             plt.show()
 
-        return list_triangles, vertices_inner, vertices_bound
+        return list_triangles, vertices_inner, vertices_bound, dict_segment
 
     def plot_function_actual(self, ax, fn_f, min_x, max_x, min_y, max_y):
         X = np.linspace(min_x, max_x, endpoint=True, num=50)

@@ -12,12 +12,15 @@ class Triangle:
         try:
             return self._area
         except:
-            a = self._distance(self.vertices[0], self.vertices[1])
-            b = self._distance(self.vertices[0], self.vertices[2])
-            c = self._distance(self.vertices[1], self.vertices[2])
+            # a = self._distance(self.vertices[0], self.vertices[1])
+            # b = self._distance(self.vertices[0], self.vertices[2])
+            # c = self._distance(self.vertices[1], self.vertices[2])
+            #
+            # p = (a+b+c)/2
+            # self._area = sqrt(p*(p-a)*(p-b)*(p-c)) * 2
 
-            p = (a+b+c)/2
-            self._area = sqrt(p*(p-a)*(p-b)*(p-c)) * 2
+            self._area = abs((self.vertices[0].x - self.vertices[1].x) * (self.vertices[0].y - self.vertices[2].y)
+                         -(self.vertices[0].y - self.vertices[1].y) * (self.vertices[0].x - self.vertices[2].x))
             return self._area
 
 

@@ -66,8 +66,28 @@ class IntergralationGaussian:
 
         return triangle.area2()*IntergralationGaussian._gaussian(new_func)
 
+    def computing_intergralation_adaptive_error_on_triangle(self, fn_f, triangle:Triangle):
+        def new_func(csi, eta):
+            x,y = IntergralationGaussian.transfrom_x_y_from_csi_eta(csi, eta,
+                                                                    triangle.vertices[0],
+                                                                    triangle.vertices[1],
+                                                                    triangle.vertices[2])
+            return fn_f(x, y)**2
+
+        return (triangle.area2()/2)**(1/2)*IntergralationGaussian._gaussian(new_func)
+
     @staticmethod
     def computing_intergralation_f_multi_base_function_on_triangle(fn_f, triangle:Triangle, ver1:Vertex,
+                                                           ver2:Vertex,
+                                                           ver3:Vertex):
+        def new_func(csi, eta):
+            x,y = IntergralationGaussian.transfrom_x_y_from_csi_eta(csi, eta, ver1, ver2, ver3)
+            return fn_f(x, y) * (1 - csi - eta)
+
+        return triangle.area2()*IntergralationGaussian._gaussian(new_func)\
+
+    @staticmethod
+    def computing_intergralation_f_multi_base_function_on_triangle_using_element_center(fn_f, triangle:Triangle, ver1:Vertex,
                                                            ver2:Vertex,
                                                            ver3:Vertex):
         def new_func(csi, eta):

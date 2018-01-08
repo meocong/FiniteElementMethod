@@ -194,25 +194,26 @@ class Fem2D:
     def cg_method(self, A, F, max_iter, epsilon):
         A_temp = A.tocsr()
         X = np.zeros(F.shape[0])
-        R1 = F.tocsr()
-        P = F.tocsr()
-        norm1 = R1.transpose().dot(R1)[0,0]
+        R1 = F.transpose().tocsr()
+        P = F.transpose().tocsr()
+        norm1 = R1.dot(R1.transpose())[0,0]
         norm2 = 0
 
         for n_iter in range(1,max_iter+1):
             if (n_iter != 1):
                 P = R1 + norm1 * P / norm2
 
-            alpha = norm1 / P.transpose().dot(A_temp).dot(P)[0,0]
+            alpha = norm1 / P.dot(A_temp).dot(P.transpose())[0,0]
             X += alpha * P
 
             norm2 = norm1
-            R1 = R1 - alpha * A_temp.dot(P)
-            norm1 = R1.transpose().dot(R1)[0,0]
+            R1 = R1 - alpha * A_temp.dot(P.transpose()).transpose()
+            norm1 = R1.dot(R1.transpose())[0,0]
 
             if (norm1 < epsilon):
                 break
-        return X, n_iter
+
+        return np.array(X)[0], n_iter
 
     def cg_method_optimize(self, A, F, max_iter, epsilon):
         time_iter = 0
@@ -265,7 +266,7 @@ class Fem2D:
         return sqrt(l2_error), sqrt(l2_error + fx_error + fy_error)
 
     def dirichlet_boundary_rectangle(self, fn_f, fn_root, fn_root_dev_x, fn_root_dev_y, fn_r, fn_p, plot,
-                           square_size, adaptive, threshold_adaptive, n_iter, max_element):
+                           square_size, adaptive, n_iter, max_element):
         max_element = int(max_element)
         time_start = time.time()
 
@@ -275,10 +276,8 @@ class Fem2D:
 
         print("Deviding triangle element")
 
-        self.list_triangles, list_inner_vertices, list_bound_vertices = \
-            self.triandulation.process_square(square_size=square_size, n_iter=n_iter, plot=plot, adaptive=adaptive,
-                                              threshold_adaptive=threshold_adaptive, fn_f =fn_f,
-                                              max_element=max_element)
+        self.list_triangles, list_inner_vertices, list_bound_vertices, dict_segment = \
+            self.triandulation.initalize_process_square(square_size=square_size, n_iter=n_iter, plot=plot, fn_f =fn_f)
         n_element = len(self.list_triangles)
 
         part_time = time.time()
@@ -298,23 +297,54 @@ class Fem2D:
         print("Number of nonzero values {0}".format(num_nonzero))
         part_time = time.time()
 
-
-        # print("A", self.A)
-        # print("F", self.F)
-
         print("Solving equations problem by using Preconditioner conjugate gradient method")
         # self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
         self.Un, time_iter = self.cg_method_optimize(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
+        # print(self.Un, time_iter)
         print("Solved PCG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
-        part_time = time.time()
 
-        # print(self.Un)
-
-        # print(self.Un)
-        # print(self.A.dot(self.Un) - self.F)
 
         print("Finished FEM in {0:2} seconds".format(time.time() - time_start))
         part_time = time.time()
+
+        if (adaptive == True):
+            step = 0
+            print("Initial {0} elements".format(len(self.list_triangles)))
+            while (len(self.list_triangles) < max_element):
+                step += 1
+                print("  Adaptive threshold {0}th step".format(step))
+
+                self.list_triangles, list_inner_vertices, list_bound_vertices, dict_segment = \
+                    self.triandulation.process_free_shape_adaptively(
+                                                          list_triangles=self.list_triangles,
+                                                          vertices_inner=list_inner_vertices,
+                                                          vertices_bound=list_bound_vertices,
+                                                          dict_segment=dict_segment,
+                                                          Un=self.Un,
+                                                          plot=plot,fn_f=fn_f,max_element=max_element)
+                n_element = len(self.list_triangles)
+
+                part_time = time.time()
+                print("  Devided {0} triangle elements in {1:2} seconds".format(n_element, part_time - time_start))
+                print("  Number of vertices inside     : {0}".format(list_inner_vertices.length))
+                print("  Number of vertices on boundary: {0}".format(list_bound_vertices.length))
+
+                print("  Computing force vector")
+                self.F = self._computing_force_vector(self.list_triangles, n_element, fn_f)
+                print("  Computed force vector in {0} seconds".format(time.time() - part_time))
+                part_time = time.time()
+
+                print("  Computing stiffness matrix")
+                self.A = self._computing_stiffness(self.list_triangles, n_element, fn_r, fn_p)
+                print("  Computed stiffness matrix in {0:2} seconds".format(time.time() - part_time))
+                num_nonzero = len(self.A.nonzero()[0])
+                print("  Number of nonzero values {0}".format(num_nonzero))
+                part_time = time.time()
+
+                print("  Solving equations problem by using Preconditioner conjugate gradient method")
+                # self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
+                self.Un, time_iter = self.cg_method_optimize(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
+                print("  Solved PCG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
 
         if (fn_root is not None):
             print("Computing error")
@@ -323,24 +353,23 @@ class Fem2D:
             print("Error in H10 space: {0} estimated in {1:2} seconds".format(h10_error, time.time() - part_time))
 
     def dirichlet_boundary_free_shape(self, fn_f, fn_root, fn_root_dev_x, fn_root_dev_y, fn_r, fn_p, plot,
-                           adaptive, threshold_adaptive, n_iter, max_element, shape_dir = None, is_map = False,
+                           adaptive, n_iter, max_element, shape_dir = None, is_map = False,
                                       map_width = None, map_height = None,
-                                      shape = None, option="", max_vertice_add_each_edge=0, max_vertice_added_near_each_vertice=0):
+                                      shape = None, option="", max_vertice_add_each_edge=1, max_vertice_added_near_each_vertice=0):
         max_element = int(max_element)
         time_start = time.time()
 
         self.fn_root = fn_root
         self.n_iter = n_iter
 
-        print("Deviding triangle element")
+        print("Deviding initial triangle element")
 
-        self.list_triangles, list_inner_vertices, list_bound_vertices = \
-            self.triandulation.process_free_shape(shape_dir=shape_dir, is_map=is_map, map_width=map_width,
+        self.list_triangles, list_inner_vertices, list_bound_vertices, dict_segment = \
+            self.triandulation.initalize_process_free_shape(shape_dir=shape_dir, is_map=is_map, map_width=map_width,
                                                   map_height=map_height,
                                                   shape=shape, option=option,
-                                                  n_iter=n_iter, plot=plot, adaptive=adaptive,
-                                              threshold_adaptive=threshold_adaptive, fn_f =fn_f,
-                                              max_element=max_element, max_vertice_add_each_edge=max_vertice_add_each_edge,
+                                                  plot=plot, fn_f =fn_f,
+                                                  max_vertice_add_each_edge=max_vertice_add_each_edge,
                                                   max_vertice_added_near_each_vertice=max_vertice_added_near_each_vertice)
         n_element = len(self.list_triangles)
 
@@ -361,20 +390,49 @@ class Fem2D:
         print("Number of nonzero values {0}".format(num_nonzero))
         part_time = time.time()
 
-
-        # print("A", self.A)
-        # print("F", self.F)
-
         print("Solving equations problem by using Preconditioner conjugate gradient method")
         # self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
         self.Un, time_iter = self.cg_method_optimize(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
         print("Solved PCG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
-        part_time = time.time()
 
-        # print(self.Un)
+        if (adaptive == True):
+            step = 0
+            print("Initial {0} elements".format(len(self.list_triangles)))
+            while (len(self.list_triangles) < max_element):
+                step += 1
+                print("  Adaptive threshold {0}th step".format(step))
 
-        # print(self.Un)
-        # print(self.A.dot(self.Un) - self.F)
+                self.list_triangles, list_inner_vertices, list_bound_vertices, dict_segment = \
+                    self.triandulation.process_free_shape_adaptively(
+                                                          list_triangles=self.list_triangles,
+                                                          vertices_inner=list_inner_vertices,
+                                                          vertices_bound=list_bound_vertices,
+                                                          dict_segment=dict_segment,
+                                                          Un=self.Un,
+                                                          plot=plot,fn_f=fn_f,max_element=max_element)
+                n_element = len(self.list_triangles)
+
+                part_time = time.time()
+                print("  Devided {0} triangle elements in {1:2} seconds".format(n_element, part_time - time_start))
+                print("  Number of vertices inside     : {0}".format(list_inner_vertices.length))
+                print("  Number of vertices on boundary: {0}".format(list_bound_vertices.length))
+
+                print("  Computing force vector")
+                self.F = self._computing_force_vector(self.list_triangles, n_element, fn_f)
+                print("  Computed force vector in {0} seconds".format(time.time() - part_time))
+                part_time = time.time()
+
+                print("  Computing stiffness matrix")
+                self.A = self._computing_stiffness(self.list_triangles, n_element, fn_r, fn_p)
+                print("  Computed stiffness matrix in {0:2} seconds".format(time.time() - part_time))
+                num_nonzero = len(self.A.nonzero()[0])
+                print("  Number of nonzero values {0}".format(num_nonzero))
+                part_time = time.time()
+
+                print("  Solving equations problem by using Preconditioner conjugate gradient method")
+                # self.Un, time_iter = self.cg_method(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
+                self.Un, time_iter = self.cg_method_optimize(self.A, self.F, max_iter=num_nonzero, epsilon=1e-10)
+                print("  Solved PCG in {0:2} seconds with {1} iterations".format(time.time() - part_time, time_iter))
 
         print("Finished FEM in {0:2} seconds".format(time.time() - time_start))
         part_time = time.time()
@@ -430,10 +488,10 @@ class test2:
         # 4*a^2*(1-a*r^2)*e^(-a^2*r^2)
         r2 = (x-0.5)**2 + (y-0.5)**2
         # print("xxx", 4*self.a2*(1-self.a*r2)*exp(-self.a2*r2), x, y, self.a, self.a2, r2)
-        return 4*self.a2*(1-self.a*r2)*np.exp(-self.a2*r2)
+        return 4000*self.a2*(1-self.a*r2)*np.exp(-self.a2*r2)
 
     def root_function(self, x, y):
-        return self.a * np.exp(-self.a * (x-0.5)**2 + (y-0.5)**2)
+        return self.a * np.exp(-self.a * (x-0.5)**2 + (y-0.5)**2)*1000
 
     def root_function_deviation_x(self, x, y):
         return 0
@@ -472,14 +530,15 @@ class test3:
 
 
 ############## Finite element method on rectangle with equally devided ###################
-# print("Processing finite element method with function -Uxx - Uyy = f")
-# temp = Fem2D()
-# test = test1()
-# temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
-#                           fn_root_dev_x=test.root_function_deviation_x,
-#                           fn_root_dev_y=test.root_function_deviation_y,
-#                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=False, threshold_adaptive=0.5,
-#                           n_iter=5, max_element = 1e7)
+print("Processing finite element method with function -Uxx - Uyy = f")
+temp = Fem2D()
+test = test2()
+temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
+                          fn_root_dev_x=test.root_function_deviation_x,
+                          fn_root_dev_y=test.root_function_deviation_y,
+                          fn_r=test.r, fn_p=test.p, plot = False, square_size=1, adaptive=True,
+                          n_iter=3, max_element = 40000)
+
 # for i in range(0,10):
 #     temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=test.root_function,
 #                                       fn_root_dev_x=test.root_function_deviation_x,
@@ -489,41 +548,17 @@ class test3:
 #                                       n_iter=i, max_element=1e7)
 
 
-
-
-# ############## Finite element method on rectangle with non-heap(threshold) adaptive devided ###################
-# print("Processing finite element method with function -Uxx - Uyy = f")
-# temp = Fem2D()
-# test = test2()
-# temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=None,
-#                           fn_root_dev_x=None,
-#                           fn_root_dev_y=None,
-#                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=True, threshold_adaptive=0.05,
-#                           n_iter=2, max_element = 1e3 + 2e2 + 5e1)
-
-
-############## Finite element method on rectangle with heap adaptive devided ###################
-# print("Processing finite element method with function -Uxx - Uyy = f")
-# temp = Fem2D()
-# test = test2()
-# temp.dirichlet_boundary_rectangle(fn_f=test.f, fn_root=None,
-#                           fn_root_dev_x=None,
-#                           fn_root_dev_y=None,
-#                           fn_r=test.r, fn_p=test.p, plot = True, square_size=1, adaptive=True, threshold_adaptive=None,
-#                           n_iter=2, max_element = 1e3 + 6e2 + 8e1)
-
-
 ############## Finite element method on rectangle with free heap adaptive devided ###################
-print("Processing finite element method with function -Uxx - Uyy = f")
-temp = Fem2D()
-test = test1()
-temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=test.root_function,
-                          fn_root_dev_x=test.root_function_deviation_x,
-                          fn_root_dev_y=test.root_function_deviation_y,
-                          fn_r=test.r, fn_p=test.p, plot = True, adaptive=True, threshold_adaptive=None,
-                          n_iter=2, max_element = 5000, shape=[[0,0],[1,0],[1,1],[0,1]],
-                                   is_map=True, map_width=1, map_height=1, option="pq30D", max_vertice_add_each_edge=100,
-                                   max_vertice_added_near_each_vertice=4)
+# print("Processing finite element method with function -Uxx - Uyy = f")
+# temp = Fem2D()
+# test = test2()
+# temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=test.root_function,
+#                           fn_root_dev_x=test.root_function_deviation_x,
+#                           fn_root_dev_y=test.root_function_deviation_y,
+#                           fn_r=test.r, fn_p=test.p, plot = True, adaptive=True,
+#                           n_iter=2, max_element = 40200, shape=[[0,0],[1,0],[1,1],[0,1]],
+#                                    is_map=True, map_width=1, map_height=1, option="pq30D", max_vertice_add_each_edge=20,
+#                                    max_vertice_added_near_each_vertice=4)
 
 # temp = Fem2D()
 # test = test1()
@@ -542,10 +577,10 @@ temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=test.root_function,
 # temp.dirichlet_boundary_free_shape(fn_f=test.f, fn_root=None,
 #                           fn_root_dev_x=None,
 #                           fn_root_dev_y=None,
-#                           fn_r=test.r, fn_p=test.p, plot = True, adaptive=True, threshold_adaptive=None,
+#                           fn_r=test.r, fn_p=test.p, plot = True, adaptive=False,
 #                           n_iter=2, max_element = 1e3, shape_dir="/Users/nguyenviet/project/FiniteElementMethod/testing triangulation/hanoi_polygon.txt",
 #                                    is_map=True, map_width=8/5, map_height=1, option="pq20D")
 
 
 
-# temp.error_in_point(0.69, 0.69)
+temp.error_in_point(0.51, 0.51)
